@@ -5,7 +5,7 @@
  *     sends it to the browser and deletes the zip from the server
  */
 // Replace these values
-$dir_to_zip    = '/home/tgould/www/ines/';
+$dir_to_zip    = '/var/www/sitename/';
 $zip_file_name = '/tmp/ALLTHETHINGS.zip';
 
 all_the_things($dir_to_zip, $zip_file_name);
@@ -22,7 +22,9 @@ unlink($zip_file_name);
  */
 function all_the_things($dir_to_zip, $zip_file_name) {
   ini_set('memory_limit', -1);
+  ini_set('output_buffering', 'On');
   set_time_limit(600);
+
   if (!extension_loaded('zip') || !file_exists($dir_to_zip)) {
     return false;
   }
