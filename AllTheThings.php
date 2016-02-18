@@ -10,10 +10,10 @@ $zip_file_name = '/tmp/ALLTHETHINGS.zip';
 
 // Paths to exclude form the zip
 $excludes = array(
-  'docroot/sites/',
+  'docroot/sites',
 );
 
-all_the_things($dir_to_zip, $zip_file_name);
+all_the_things($dir_to_zip, $zip_file_name, $excludes);
 unlink($zip_file_name);
 
 /**
@@ -25,7 +25,7 @@ unlink($zip_file_name);
  *   The temporary writable location eg "/tmp/ALLTHETHINGS.zip"
  * 
  */
-function all_the_things($dir_to_zip, $zip_file_name) {
+function all_the_things($dir_to_zip, $zip_file_name, $excludes) {
   ini_set('memory_limit', -1);
   ini_set('output_buffering', 'On');
   set_time_limit(600);
@@ -46,29 +46,40 @@ function all_the_things($dir_to_zip, $zip_file_name) {
 
     foreach ($files as $file) {
       $file = str_replace('\\', '/', $file);
-
+      
+      $include = TRUE;
       foreach ($excludes as $exclude) {
         if (strpos($file, $exclude) !== FALSE) {
-          continue 2;
+          $include = FALSE;
+          break;
         }
       }
-      
+
       // Ignore "." and ".." folders
       if (in_array(substr($file, strrpos($file, '/') + 1), array('.', '..')))
         continue;
 
       $file = realpath($file);
 
-      if (is_dir($file) === true) {
+      if (is_dir($file) === true && $include === TRUE) {
         $zip->addEmptyDir(str_replace($dir_to_zip . '/', '', $file . '/'));
       }
-      else if (is_file($file) === true) {
+      else if (is_file($file) === true && $include === TRUE) {
         $zip->addFromString(str_replace($dir_to_zip . '/', '', $file), file_get_contents($file));
       }
     }
   }
-  else if (is_file($dir_to_zip) === true) {
-    $zip->addFromString(basename($dir_to_zip), file_get_contents($dir_to_zip));
+  else if (is_file($dir_to_zip) === true) {   
+    $include = TRUE;
+    foreach ($excludes as $exclude) {
+      if (strpos($file, $exclude) !== FALSE) {
+        $include = FALSE;
+        break;
+      }
+    }
+    if ($include === TRUE) {
+      $zip->addFromString(basename($dir_to_zip), file_get_contents($dir_to_zip));
+    }
   }
 
   $zip->close();
