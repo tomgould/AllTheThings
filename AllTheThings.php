@@ -5,8 +5,13 @@
  *     sends it to the browser and deletes the zip from the server
  */
 // Replace these values
-$dir_to_zip    = '/var/www/sitename/';
+$dir_to_zip    = '/home/tgould/www/ines/';
 $zip_file_name = '/tmp/ALLTHETHINGS.zip';
+
+// Paths to exclude form the zip
+$excludes = array(
+  'docroot/sites/',
+);
 
 all_the_things($dir_to_zip, $zip_file_name);
 unlink($zip_file_name);
@@ -42,6 +47,12 @@ function all_the_things($dir_to_zip, $zip_file_name) {
     foreach ($files as $file) {
       $file = str_replace('\\', '/', $file);
 
+      foreach ($excludes as $exclude) {
+        if (strpos($file, $exclude) !== FALSE) {
+          continue 2;
+        }
+      }
+      
       // Ignore "." and ".." folders
       if (in_array(substr($file, strrpos($file, '/') + 1), array('.', '..')))
         continue;
